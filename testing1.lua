@@ -1,7 +1,14 @@
 -- // CONFIGURACIÓN INICIAL
-local boxColor = Color3.fromRGB(0, 255, 0)
 local refreshRate = 1 -- segundos
 local espEnabled = false
+
+-- // COLORES POR EQUIPO
+local teamColors = {
+	["Guards"] = Color3.fromRGB(0, 150, 255),     -- azul
+	["Inmates"] = Color3.fromRGB(255, 110, 0),    -- naranja
+	["Neutral"] = Color3.fromRGB(130, 130, 130),  -- gris
+	["Criminals"] = Color3.fromRGB(255, 0, 0)     -- rojo
+}
 
 -- // GUI CREACIÓN
 local ScreenGui = Instance.new("ScreenGui")
@@ -21,22 +28,32 @@ ToggleButton.Parent = ScreenGui
 -- // FUNCIONES DE ESP
 
 local function createESP(player)
-	if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and not player.Character:FindFirstChild("ESPBox") then
+	local character = player.Character
+	if not character then return end
+	local hrp = character:FindFirstChild("HumanoidRootPart")
+	if not hrp then return end
+
+	if not character:FindFirstChild("ESPBox") then
 		local box = Instance.new("BoxHandleAdornment")
 		box.Name = "ESPBox"
-		box.Adornee = player.Character:FindFirstChild("HumanoidRootPart")
+		box.Adornee = hrp
 		box.Size = Vector3.new(4, 6, 2)
-		box.Color3 = boxColor
 		box.AlwaysOnTop = true
 		box.ZIndex = 5
 		box.Transparency = 0.5
-		box.Parent = player.Character
+
+		-- Asignar color por team
+		local teamName = player.Team and player.Team.Name or "Neutral"
+		box.Color3 = teamColors[teamName] or Color3.fromRGB(255, 255, 255)
+
+		box.Parent = character
 	end
 end
 
 local function removeESP(player)
-	if player.Character and player.Character:FindFirstChild("ESPBox") then
-		player.Character:FindFirstChild("ESPBox"):Destroy()
+	local character = player.Character
+	if character and character:FindFirstChild("ESPBox") then
+		character:FindFirstChild("ESPBox"):Destroy()
 	end
 end
 
@@ -52,7 +69,7 @@ local function updateESP()
 	end
 end
 
--- // BOTÓN PARA ACTIVAR/DESACTIVAR
+-- // BOTÓN DE ACTIVACIÓN
 
 ToggleButton.MouseButton1Click:Connect(function()
 	espEnabled = not espEnabled
