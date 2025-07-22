@@ -1,12 +1,27 @@
--- // CONFIGURACIÓN
-local refreshRate = 1 -- cada cuántos segundos actualizar
-local boxColor = Color3.fromRGB(255, 0, 0) -- color de las cajas
-local espEnabled = true
+-- // CONFIGURACIÓN INICIAL
+local boxColor = Color3.fromRGB(0, 255, 0)
+local refreshRate = 1 -- segundos
+local espEnabled = false
 
--- // FUNCIONES
+-- // GUI CREACIÓN
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ESP_GUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(0, 150, 0, 50)
+ToggleButton.Position = UDim2.new(0, 20, 0, 100)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ToggleButton.TextColor3 = Color3.new(1, 1, 1)
+ToggleButton.TextScaled = true
+ToggleButton.Text = "ESP: OFF"
+ToggleButton.Parent = ScreenGui
+
+-- // FUNCIONES DE ESP
 
 local function createESP(player)
-	if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and not player:FindFirstChild("ESPBox") then
+	if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and not player.Character:FindFirstChild("ESPBox") then
 		local box = Instance.new("BoxHandleAdornment")
 		box.Name = "ESPBox"
 		box.Adornee = player.Character:FindFirstChild("HumanoidRootPart")
@@ -19,29 +34,35 @@ local function createESP(player)
 	end
 end
 
+local function removeESP(player)
+	if player.Character and player.Character:FindFirstChild("ESPBox") then
+		player.Character:FindFirstChild("ESPBox"):Destroy()
+	end
+end
+
 local function updateESP()
 	for _, player in pairs(game.Players:GetPlayers()) do
 		if player ~= game.Players.LocalPlayer then
-			createESP(player)
+			if espEnabled then
+				createESP(player)
+			else
+				removeESP(player)
+			end
 		end
 	end
 end
 
--- // CONEXIONES
+-- // BOTÓN PARA ACTIVAR/DESACTIVAR
 
-game.Players.PlayerAdded:Connect(function()
-	wait(1)
+ToggleButton.MouseButton1Click:Connect(function()
+	espEnabled = not espEnabled
+	ToggleButton.Text = espEnabled and "ESP: ON" or "ESP: OFF"
 	updateESP()
 end)
 
-game.Players.PlayerRemoving:Connect(function()
-	wait(1)
-	updateESP()
-end)
+-- // ACTUALIZACIÓN AUTOMÁTICA
 
--- // LOOP PRINCIPAL
-
-while espEnabled do
+while true do
 	updateESP()
 	wait(refreshRate)
 end
